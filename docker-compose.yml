@@ -11,8 +11,8 @@ services:
       - discovery.type=single-node
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
-      - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=Alejandro93
+      - xpack.security.enabled=false        # 🔒 Desactivado para laboratorio
+      - action.destructive_requires_name=false
     ulimits:
       memlock:
         soft: -1
@@ -20,7 +20,7 @@ services:
     volumes:
       - esdata:/usr/share/elasticsearch/data
     ports:
-      - "9200:9200"
+      - "9200:9200"       # Elasticsearch API
     networks:
       - elknet
 
@@ -29,15 +29,10 @@ services:
     container_name: logstash
     restart: unless-stopped
     ports:
-      - "5044:5044"
-      - "9600:9600"
+      - "5044:5044"       # Puerto para Filebeat/T-Pot
+      - "9600:9600"       # API interna de Logstash (opcional)
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
-    environment:
-      - xpack.monitoring.enabled=true
-      - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
-      - xpack.monitoring.elasticsearch.username=logstash_internal
-      - xpack.monitoring.elasticsearch.password=Alejandro93
     networks:
       - elknet
     depends_on:
@@ -49,12 +44,10 @@ services:
     restart: unless-stopped
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=kibana_system_user
-      - ELASTICSEARCH_PASSWORD=Alejandro93
       - SERVER_NAME=kibana
       - SERVER_PUBLICBASEURL=http://localhost:5601
     ports:
-      - "5601:5601"
+      - "5601:5601"       # Kibana UI
     networks:
       - elknet
     depends_on:
@@ -67,4 +60,3 @@ volumes:
 networks:
   elknet:
     driver: bridge
-
