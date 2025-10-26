@@ -1,0 +1,70 @@
+version: "3.8"
+
+services:
+  elasticsearch:
+    image: docker.elastic.co/elasticsearch/elasticsearch:8.8.2
+    container_name: elasticsearch
+    restart: unless-stopped
+    environment:
+      - node.name=es01
+      - cluster.name=elk-lab
+      - discovery.type=single-node
+      - bootstrap.memory_lock=true
+      - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
+      - xpack.security.enabled=true
+      - ELASTIC_PASSWORD=Alejandro93
+    ulimits:
+      memlock:
+        soft: -1
+        hard: -1
+    volumes:
+      - esdata:/usr/share/elasticsearch/data
+    ports:
+      - "9200:9200"
+    networks:
+      - elknet
+
+  logstash:
+    image: docker.elastic.co/logstash/logstash:8.8.2
+    container_name: logstash
+    restart: unless-stopped
+    ports:
+      - "5044:5044"
+      - "9600:9600"
+    volumes:
+      - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
+    environment:
+      - xpack.monitoring.enabled=true
+      - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
+      - xpack.monitoring.elasticsearch.username=logstash_internal
+      - xpack.monitoring.elasticsearch.password=Alejandro93
+    networks:
+      - elknet
+    depends_on:
+      - elasticsearch
+
+  kibana:
+    image: docker.elastic.co/kibana/kibana:8.8.2
+    container_name: kibana
+    restart: unless-stopped
+    environment:
+      - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
+      - ELASTICSEARCH_USERNAME=kibana_system_user
+      - ELASTICSEARCH_PASSWORD=Alejandro93
+      - SERVER_NAME=kibana
+      - SERVER_PUBLICBASEURL=http://localhost:5601
+    ports:
+      - "5601:5601"
+    networks:
+      - elknet
+    depends_on:
+      - elasticsearch
+
+volumes:
+  esdata:
+    driver: local
+
+networks:
+  elknet:
+    driver: bridge
+
