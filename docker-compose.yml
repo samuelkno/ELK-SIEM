@@ -12,7 +12,7 @@ services:
       - bootstrap.memory_lock=true
       - "ES_JAVA_OPTS=-Xms2g -Xmx2g"
       - xpack.security.enabled=true
-      - ELASTIC_PASSWORD=Alejandro93        # 🔐 Contraseña del usuario "elastic"
+      - ELASTIC_PASSWORD=Alejandro93
     ulimits:
       memlock:
         soft: -1
@@ -29,14 +29,14 @@ services:
     container_name: logstash
     restart: unless-stopped
     ports:
-      - "5044:5044"       # Puerto para Filebeat/T-Pot
-      - "9600:9600"       # API interna de Logstash
+      - "5044:5044"
+      - "9600:9600"
     volumes:
       - ./logstash/pipeline:/usr/share/logstash/pipeline:ro
     environment:
       - xpack.monitoring.enabled=true
       - xpack.monitoring.elasticsearch.hosts=http://elasticsearch:9200
-      - xpack.monitoring.elasticsearch.username=elastic
+      - xpack.monitoring.elasticsearch.username=logstash_internal
       - xpack.monitoring.elasticsearch.password=Alejandro93
     networks:
       - elknet
@@ -49,7 +49,7 @@ services:
     restart: unless-stopped
     environment:
       - ELASTICSEARCH_HOSTS=http://elasticsearch:9200
-      - ELASTICSEARCH_USERNAME=elastic
+      - ELASTICSEARCH_USERNAME=kibana_system_user
       - ELASTICSEARCH_PASSWORD=Alejandro93
       - SERVER_NAME=kibana
       - SERVER_PUBLICBASEURL=http://localhost:5601
